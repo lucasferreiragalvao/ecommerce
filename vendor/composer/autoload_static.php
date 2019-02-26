@@ -9,14 +9,14 @@ class ComposerStaticInit784cda1e48f7d9e31989eb8ab0915944
     public static $prefixLengthsPsr4 = array (
         'D' => 
         array (
-            'Dblfg\\' => 6,
+            'Devlfg\\' => 7,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'Dblfg\\' => 
+        'Devlfg\\' => 
         array (
-            0 => __DIR__ . '/..' . '/dblfg/php-classes/src',
+            0 => __DIR__ . '/..' . '/dev-lfg/php-classes/src',
         ),
     );
 

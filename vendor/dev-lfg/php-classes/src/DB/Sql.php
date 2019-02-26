@@ -1,6 +1,6 @@
 <?php 
 
-namespace Dblfg\DB;
+namespace Devlfg\DB;
 
 class Sql {
 
