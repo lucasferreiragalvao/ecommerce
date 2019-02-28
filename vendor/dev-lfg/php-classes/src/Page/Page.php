@@ -33,12 +33,11 @@
 
         }
         private function setData($data = array()){
-            foreach($this->options["data"] as $key => $value){
+            foreach($data as $key => $value){
                 $this->tpl->assign($key, $value);
             }
         }
         public function setTpl($name , $data = array(), $returnHtml = false){
-
             $this->setData($data);
             return $this->tpl->draw($name, $returnHtml);
         }
