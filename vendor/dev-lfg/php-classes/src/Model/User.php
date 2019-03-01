@@ -3,9 +3,13 @@
 
     use \Devlfg\DB\Sql;
     use \Devlfg\Model;
+    use \Devlfg\Mailer\Mailer;
+
     class User extends Model{
 
         const SESSION = "User";
+        const IV = "Ecommerce_PHP_7_";
+        const SECRET = "Ecommerce_PHP_7_";
 
         public static function login($login,$password){
 
@@ -105,6 +109,103 @@
 
             $sql = new Sql();
             $sql->query("CALL sp_users_delete(:iduser)",array(
+                ":iduser" => $this->getiduser()
+            ));
+        }
+        public static function getForgot($email){
+
+            $sql = new Sql();
+
+            $results = $sql->select("
+                SELECT * FROM tb_persons P
+                INNER JOIN tb_users U USING(idperson)
+                WHERE P.desemail = :email
+            ", array(
+                ":email" => $email
+            ));
+
+            if(count($results) === 0)
+                throw new \Exception("Não foi possível recuperar a senha");
+            
+            $data = $results[0];
+
+            $results2 = $sql->select("CALL sp_userspasswordsrecoveries_create(:iduser,
+            :desip)",array(
+                ":iduser" => $data["iduser"],
+                ":desip"  => $_SERVER["REMOTE_ADDR"]
+            ));
+
+            if(count($results2) === 0)
+                throw new \Exception("Não foi possível recuperar a senha");
+            
+            $dataRecovery = $results2[0];
+
+            $code = base64_encode(openssl_encrypt(
+                $dataRecovery["idrecovery"],
+                "aes-128-cbc",
+                User::SECRET,
+                true,
+                User::IV
+            ));
+
+            $link = "http://dev.ecommerce.com/admin/forgot/reset?code=$code";
+            $mailer = new Mailer($data["desemail"],$data["desperson"],
+            "Redefinir Senha da Ecommerce", "forgot", array(
+                "name" => $data["desperson"],
+                "link" => $link
+            ));
+
+            $mailer->send();
+
+            return $data;
+
+        }
+
+        public static function validForgotDecrypt($code){
+            $idrecovery = openssl_decrypt(
+                base64_decode($code),
+                "aes-128-cbc",
+                User::SECRET,
+                true,
+                User::IV
+            );
+            
+            $sql = new Sql();
+
+            $results = $sql->select("
+                SELECT * FROM tb_userspasswordsrecoveries UP
+                INNER JOIN tb_users U USING(iduser)
+                INNER JOIN tb_persons P USING(idperson)
+                WHERE
+                    UP.idrecovery = :idrecovery 
+                    AND UP.dtrecovery IS NULL
+                    AND DATE_ADD(UP.dtregister, INTERVAL 1 HOUR) >= NOW()
+                ",array(
+                    ":idrecovery" => $idrecovery
+                )
+            );
+
+            if(count($results) === 0)
+                throw new \Exception("Não foi possível recuperar a senha");
+            
+            return $results[0];
+        }
+        
+        public static function setForgotUsed($idrecovery){
+
+            $sql = new Sql();
+            $sql->query("UPDATE tb_userspasswordsrecoveries 
+            SET dtrecovery = NOW() WHERE idrecovery = :idrecovery",array(
+                ":idrecovery" => $idrecovery
+            ));
+        }
+        
+        public function setPassword($password){
+            $sql = new Sql();
+            $sql->query("UPDATE tb_users
+            SET despassword = :password 
+            WHERE iduser = :iduser",array(
+                ":password" => $password,
                 ":iduser" => $this->getiduser()
             ));
         }
