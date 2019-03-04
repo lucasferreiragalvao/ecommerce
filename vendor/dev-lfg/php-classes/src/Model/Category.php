@@ -3,7 +3,7 @@
 
     use \Devlfg\DB\Sql;
     use \Devlfg\Model;
-    use \Devlfg\Mailer\Mailer;
+    use \Devlfg\Model\Product;
 
     class Category extends Model{
 
@@ -66,7 +66,6 @@
         public function getProducts($related = true){
 
             $sql = new Sql();
-            //exit(var_dump($this->getidcategory()));
             if($related === true){
 
                     return $sql->select("
@@ -94,6 +93,33 @@
                     ":idcategory" => $this->getidcategory()
                 ]);
             }
+        }
+
+        public function getProductsPage($page = 1, $itensPerPage = 8){
+
+            $sql = new Sql();
+
+            $start = ($page-1) * $itensPerPage;
+
+            $results = $sql->select("
+                SELECT SQL_CALC_FOUND_ROWS *
+                FROM tb_products P
+                INNER JOIN tb_productscategories PC on P.idproduct = PC.idproduct
+                INNER JOIN tb_categories C ON C.idcategory = PC.idcategory
+                WHERE C.idcategory = :idcategory
+                LIMIT $start ,$itensPerPage;
+            ",[
+                ":idcategory" => $this->getidcategory()
+            ]);
+            
+            $resultTotal = $sql->select("SELECT FOUND_ROWS() as nrtotal;");
+
+            return [
+                'data' => Product::checkList($results),
+                'total' => (int)$resultTotal[0]["nrtotal"],
+                'pages' => ceil($resultTotal[0]["nrtotal"] / $itensPerPage)
+            ];
+
         }
         public function addProduct( Product $product){
 
