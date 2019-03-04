@@ -1,12 +1,17 @@
 <?php
 
-    use \Devlfg\Page;
+    use \Devlfg\Page\Page;
     use \Devlfg\Model\Category;
+    use \Devlfg\Model\Product;
 
     $app->get('/', function() {
-	
+        
+        $products = Product::listAll();
+
         $page = new Page();
-        $page->setTpl("index");
+        $page->setTpl("index",[
+            'products' => Product::checkList($products)
+        ]);
     
     });
 
