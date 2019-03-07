@@ -3,6 +3,7 @@
     use \Devlfg\Page\Page;
     use \Devlfg\Model\Category;
     use \Devlfg\Model\Product;
+    use \Devlfg\Model\Cart;
 
     $app->get('/', function() {
         
@@ -56,5 +57,14 @@
             'product' => $product->getValues(),
             'categories' => $product->getCategories()
         ]);
+    });
+
+    $app->get("/cart", function(){
+
+        $cart = Cart::getFromSession();
+
+        $page = new Page();
+
+        $page->setTpl("cart");
     });
 ?>
