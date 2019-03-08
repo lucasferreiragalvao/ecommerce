@@ -8,19 +8,19 @@
     class User extends Model{
 
         const SESSION = "User";
+        const PASSWORD = "Password";
         const IV = "Ecommerce_PHP_7_";
         const SECRET = "Ecommerce_PHP_7_";
+        const SESSION_ERROR = "UserError";
+        const SESSION_ERROR_REGISTER = "UserErrorRegister";
 
         public static function getFromSession(){
 
             $user = new User();
-
             if(isset($_SESSION[User::SESSION]) &&
-            (int)$_SESSION[User::SESSION]['iduser'] >0){
-
-                $user->setData($_SESSION[User::SESSION]['iduser']);
+            (int)$_SESSION[User::SESSION]['iduser'] > 0){
+                $user->setData($_SESSION[User::SESSION]);
             }
-
             return $user;
         }
         public static function checkLogin($inadmin = true){
@@ -46,8 +46,10 @@
 
             $sql = new Sql();
 
-            $results = $sql->select("SELECT * FROM tb_users WHERE 
-            deslogin = :LOGIN",array(":LOGIN" => $login));
+            $results = $sql->select("SELECT * FROM tb_users U
+            INNER JOIN tb_persons P
+            ON U.idperson = P.idperson
+            WHERE U.deslogin = :LOGIN",array(":LOGIN" => $login));
 
             if(count($results) === 0){
                 throw new \Exception("Usuário inexistente ou senha 
@@ -62,6 +64,7 @@
 
                 $user->setData($data);
 
+
                 $_SESSION[User::SESSION] = $user->getValues();
 
                 return $user;
@@ -73,9 +76,15 @@
         }
         public static function verifyLogin($inadmin = true){
 
-            if(User::checkLogin($inadmin))
-            {
-                    header("Location: /admin/login");exit();
+            if(!User::checkLogin($inadmin))
+            {       
+                    if($inadmin){
+                        header("Location: /admin/login");
+                    }
+                    else{
+                        header("Location: /login");
+                    }
+                    exit;
             }  
         }
         public static function logout(){
@@ -96,7 +105,7 @@
             array(
                 ":desperson" => $this->getdesperson(),
                 ":deslogin" => $this->getdeslogin(),
-                ":despassword" => $this->getdespassword(),
+                ":despassword" => User::getPasswordHash($this->getdespassword()),
                 ":desemail" =>$this->getdesemail(),
                 ":nrphone" => $this->getnrphone(),
                 ":inadmin" => $this->getinadmin()
@@ -125,7 +134,7 @@
                 ":iduser" => $this->getiduser(),
                 ":desperson" => $this->getdesperson(),
                 ":deslogin" => $this->getdeslogin(),
-                ":despassword" => $this->getdespassword(),
+                ":despassword" => User::getPasswordHash($this->getdespassword()),
                 ":desemail" =>$this->getdesemail(),
                 ":nrphone" => $this->getnrphone(),
                 ":inadmin" => $this->getinadmin()
@@ -236,6 +245,30 @@
                 ":password" => $password,
                 ":iduser" => $this->getiduser()
             ));
+        }
+
+        public static function setError($msg){
+            $_SESSION[User::SESSION_ERROR] = $msg;
+        }
+ 
+        public static function getError(){
+            $msg = (isset($_SESSION[User::SESSION_ERROR]))
+            ? $_SESSION[User::SESSION_ERROR] : "";
+ 
+            User::clearError();
+ 
+            return $msg;
+        }
+ 
+        public static function clearError(){
+ 
+             $_SESSION[User::SESSION_ERROR] = NULL;
+        }
+
+        public static function getPasswordHash($password){
+            return password_hash($password, PASSWORD_DEFAULT,[
+                'cost' =>12
+            ]);
         }
     }
 ?>

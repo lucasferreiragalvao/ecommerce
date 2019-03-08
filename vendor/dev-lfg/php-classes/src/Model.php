@@ -22,12 +22,11 @@
                     break;
             }
         }
-        public function setData ($data = array()){
-
-            foreach($data as $key => $value){
-                //Chamando métodos dinâmicos
-                $this->{"set".$key}($value);
-            }
+        public function setData($data = array()){
+                foreach($data as $key => $value){
+                    //Chamando métodos dinâmicos
+                    $this->{"set".$key}($value);
+                }
         }
 
         public function getValues(){
