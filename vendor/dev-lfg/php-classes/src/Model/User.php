@@ -149,7 +149,7 @@
                 ":iduser" => $this->getiduser()
             ));
         }
-        public static function getForgot($email){
+        public static function getForgot($email,$inadmin = true){
 
             $sql = new Sql();
 
@@ -185,7 +185,11 @@
                 User::IV
             ));
 
-            $link = "http://dev.ecommerce.com/admin/forgot/reset?code=$code";
+            if($inadmin === true)
+                $link = "http://dev.ecommerce.com/admin/forgot/reset?code=$code";
+            else
+                $link = "http://dev.ecommerce.com/forgot/reset?code=$code";
+
             $mailer = new Mailer($data["desemail"],$data["desperson"],
             "Redefinir Senha da Ecommerce", "forgot", array(
                 "name" => $data["desperson"],
