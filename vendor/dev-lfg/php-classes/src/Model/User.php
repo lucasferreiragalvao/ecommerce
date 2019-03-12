@@ -265,10 +265,40 @@
              $_SESSION[User::SESSION_ERROR] = NULL;
         }
 
+        public static function setErrorRegister($msg){
+            $_SESSION[User::SESSION_ERROR_REGISTER] = $msg;
+        }
+ 
+        public static function getErrorRegister(){
+            $msg = (isset($_SESSION[User::SESSION_ERROR_REGISTER]))
+            ? $_SESSION[User::SESSION_ERROR_REGISTER] : "";
+ 
+            User::clearErrorRegister();
+ 
+            return $msg;
+        }
+ 
+        public static function clearErrorRegister(){
+ 
+             $_SESSION[User::SESSION_ERROR_REGISTER] = NULL;
+        }
+
         public static function getPasswordHash($password){
             return password_hash($password, PASSWORD_DEFAULT,[
                 'cost' =>12
             ]);
+        }
+
+        public function checkLoginExist($login){
+
+            $sql = new Sql();
+
+            $results = $sql->select("SELECT * FROM tb_users
+            WHERE deslogin = :deslogin",[
+                ':deslogin' => $login
+            ]);
+
+            return (count($results) > 0);
         }
     }
 ?>
