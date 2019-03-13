@@ -320,5 +320,27 @@
 
             return (count($results) > 0);
         }
+
+        public function getOrders(){
+            
+            $sql = new Sql();
+
+            $results = $sql->select("
+                SELECT *
+                FROM tb_orders O
+                INNER JOIN tb_ordersstatus OS USING(idstatus)
+                INNER JOIN tb_carts C USING(idcart)
+                INNER JOIN tb_users U 
+                ON U.iduser = O.iduser
+                INNER JOIN tb_addresses A USING(idaddress)
+                INNER JOIN tb_persons P
+                ON P.idperson = U.idperson
+                WHERE O.iduser = :iduser
+            ",[
+                ':iduser' => $this->getiduser()
+            ]);
+
+            return $results;
+        }
     }
 ?>

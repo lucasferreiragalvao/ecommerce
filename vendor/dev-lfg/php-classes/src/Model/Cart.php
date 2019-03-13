@@ -163,7 +163,6 @@
             ",[
                 ":idcart" => $this->getidcart()
             ]);
-
             if(count($results) > 0)
                 return $results[0];
             else

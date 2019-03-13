@@ -1,5 +1,6 @@
 <?php 
     use \Devlfg\Model\User;
+    use \Devlfg\Model\Cart;
 
     function formatPrice($vlprice){
 
@@ -15,5 +16,21 @@
     function getUserName(){
         $user = User::getFromSession();
         return $user->getdesperson();
+    }
+    function getCartNrQtd(){
+
+        $cart = Cart::getFromSession();
+
+        $totals = $cart->getProductsTotal();
+
+        return $totals['nrqtd'];
+    }
+    function getCartVlSubTotal(){
+
+        $cart = Cart::getFromSession();
+
+        $totals = $cart->getProductsTotal();
+
+        return formatPrice($totals['vlprice']);
     }
 ?>
