@@ -136,5 +136,69 @@
  
             $_SESSION[Order::SUCCESS] = NULL;
         }
+        public static function getPage($page = 1, $itensPerPage = 10){
+
+            $sql = new Sql();
+
+            $start = ($page-1) * $itensPerPage;
+
+            $results = $sql->select("
+                SELECT SQL_CALC_FOUND_ROWS *
+                FROM tb_orders O
+                INNER JOIN tb_ordersstatus OS USING(idstatus)
+                INNER JOIN tb_carts C USING(idcart)
+                INNER JOIN tb_users U 
+                ON U.iduser = O.iduser
+                INNER JOIN tb_addresses A USING(idaddress)
+                INNER JOIN tb_persons P
+                ON P.idperson = U.idperson
+                ORDER BY O.dtregister DESC
+                LIMIT $start ,$itensPerPage;
+            ");
+            
+            $resultTotal = $sql->select("SELECT FOUND_ROWS() as nrtotal;");
+
+            return [
+                'data' => $results,
+                'total' => (int)$resultTotal[0]["nrtotal"],
+                'pages' => ceil($resultTotal[0]["nrtotal"] / $itensPerPage)
+            ];
+
+        }
+
+        public static function getPageSearch($search , $page = 1, $itensPerPage = 10){
+
+            $sql = new Sql();
+
+            $start = ($page-1) * $itensPerPage;
+
+            $results = $sql->select("
+                SELECT SQL_CALC_FOUND_ROWS *
+                FROM tb_orders O
+                INNER JOIN tb_ordersstatus OS USING(idstatus)
+                INNER JOIN tb_carts C USING(idcart)
+                INNER JOIN tb_users U 
+                ON U.iduser = O.iduser
+                INNER JOIN tb_addresses A USING(idaddress)
+                INNER JOIN tb_persons P
+                ON P.idperson = U.idperson
+                WHERE O.idorder = :id OR
+                P.desperson LIKE :search
+                ORDER BY O.dtregister DESC
+                LIMIT $start ,$itensPerPage;
+            ",[
+                ':id' => $search,
+                ':search' => '%'.$search.'%'
+            ]);
+            
+            $resultTotal = $sql->select("SELECT FOUND_ROWS() as nrtotal;");
+
+            return [
+                'data' => $results,
+                'total' => (int)$resultTotal[0]["nrtotal"],
+                'pages' => ceil($resultTotal[0]["nrtotal"] / $itensPerPage)
+            ];
+
+        }
     }
 ?>
